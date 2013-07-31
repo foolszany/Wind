@@ -11,8 +11,7 @@ instructions:<br>
 3. save as .csv<br>
 
 #######issues:
-##########################
-######################issues###############
+#
 1. upload from excel file
 2.day/night
 3. cut off hours

@@ -22,7 +22,7 @@ shinyUI(pageWithSidebar(
  
    ),
      HTML("<hr>"),
-	 h6("by Eliav Schmulewitz at", a("Luft Gescheft", 
+	 h6("Brought to you by Eliav Schmulewitz at", a("Luft Gescheft", 
             href="http://stackexchange.com/users/170655/eliavs"))
 			),
   # Show a tabset that includes a plot, summary, and table view

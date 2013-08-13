@@ -1,41 +1,47 @@
-
-#connects the libraries that we will need
 library(shiny)
-library(openair)
-options(shiny.maxRequestSize = -1)
-# Define server logic for random distribution application
-shinyServer(function(input, output) {
-  # Reactive expression.  
-  # This is called whenever the inputs change. The renderers defined 
-  # below then all use the value computed from this expression
-  userdata <- reactive(function(){
-     if(is.null(input$bugs)){return()}
-       bugs <- read.csv(input$bugs$datapath, header=TRUE)
-     })
-	   
-	   
-	   
+userdata <- list('Upload a file'=c(1))
+# Define UI for random distribution application 
+shinyUI(pageWithSidebar(
 
-  # Generate a plot of the data. Also uses the inputs to build the 
-  # plot label. Note that the dependencies on both the inputs and
-  # the 'data' reactive expression are both tracked, and all expressions 
-  # are called in the sequence implied by the dependency graph
-  output$plot <- renderPlot({
-   if(is.null(input$bugs)){return()}
-  data<-unlist(userdata()$ws)
-    hist(data, main="wind speed histogram")
-	  })
+  # Application title
+  headerPanel("Eliav's Wind Rose"),
 
-  # Generate a summary of the data
-  output$summary <- renderPrint({
-    summary(userdata())
-  })
-
+  # Sidebar with controls to select the random distribution type
+  # and number of observations to generate. Note the use of the br()
+  # element to introduce extra vertical spacing
+  sidebarPanel(
   
-  output$windrose <- renderPlot({
-   windRose(userdata(),type=input$sorted)
-  })
-  output$pollutionrose <- renderPlot({
-   polarPlot(userdata(),pollutant=input$pollutant,type=input$sorted)
-})
-})
+  #textInput("pollutant","Please enter pollutant","no pollutant"),
+  br(),
+    fileInput("bugs", "Input Data"),
+	br(),
+	#selecting the wind direction
+	selectInput("wd","Please enter Wind direction",names(userdata),selected="wd"),
+	br(),
+	selectInput("ws","Please enter Wind speed",names(userdata),selected="ws"),
+	#selecting a pollutant
+	selectInput("pollutant","Please enter pollutant",choices=c("no pollutant",names(userdata)),selected="no pollutant"),
+	br(),
+	selectInput("directions","Wind Directions",seq(from=4, to=36, by=4),selected=12),
+	radioButtons("sorted", "Sort by:",
+				 c("season" ="season",
+				 "hour"="hour",
+				 "weekday"="weekday",
+				 "day/night"="day_night")
+ 
+   ),
+     HTML("<hr>"),
+	 h6("Instructions at", a("Luft Gescheft", 
+            href="http://luftgesheft.wordpress.com/2013/08/13/eliavs-wind-rose-instructions/", target="_blank"))
+			),
+  # Show a tabset that includes a plot, summary, and table view
+  # of the generated distribution
+  mainPanel(
+    tabsetPanel(
+      tabPanel("Plot", plotOutput("plot"), verbatimTextOutput("summary")), 
+      #tabPanel("data Summary", verbatimTextOutput("summary"),downloadButton('downloadPlot1', 'Download table')), 
+      tabPanel("Wind Rose", plotOutput("windrose"),downloadButton('downloadPlot2', 'Download rose')),
+	  tabPanel("Pollution Rose",plotOutput("pollutionrose"), downloadButton('downloadPlot3', 'Download rose'))
+    )
+  )
+))

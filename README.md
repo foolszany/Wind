@@ -1,8 +1,8 @@
 Wind
 ====
-
-tools for wind and air pollution analysis
-upload wind air pollution data file and analyse the data
+check it out at http://spark.rstudio.com/windrose/pollutionrose/
+tools for wind and air pollution analysis<br>
+upload wind air pollution data file and analyse the data<br>
 
 instructions:<br>
 1.required variables are wind speed, wind direction and date. <br>

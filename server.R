@@ -77,8 +77,10 @@ plotwindrose<-reactive(function() {
   #build the pollution rose
   plotpollutionrose<-reactive(function() {
         data<-userdata()
-		data[,input$pollutant]<-as.numeric(as.character(data[,input$pollutant]))
-   p<-polarPlot(data,pollutant=input$pollutant,type=input$sorted)
+	data[,input$pollutant]<-as.numeric(as.character(data[,input$pollutant]))
+	data[,input$ws]<-as.numeric(as.character(data[,input$ws]))
+	data[,input$wd]<-as.numeric(as.character(data[,input$wd]))
+   p<-polarPlot(data,wd=input$wd,x=input$ws,pollutant=input$pollutant,type=input$sorted)
 		})
 		# show the pollution rose
   output$pollutionrose <- renderPlot({

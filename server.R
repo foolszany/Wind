@@ -1,47 +1,96 @@
+#open libraries
 library(shiny)
-userdata <- list('Upload a file'=c(1))
-# Define UI for random distribution application 
-shinyUI(pageWithSidebar(
+library(openair)
+#define ability to open large files
+options(shiny.maxRequestSize = -1)
+# Define server logic for random distribution application
+shinyServer(function(input, output,session) {
+  #opening the file
+  userdata <- reactive(function(){
+     if(is.null(input$bugs)){return()}
+       bugs <- read.csv(input$bugs$datapath, header=TRUE)
+	   })
+	   
+	  observe({
+    df <- userdata()
+    str(names(df))
+    if (!is.null(df)) {
+      updateSelectInput(session,"pollutant", choices =c("no pollutant", names(df)))  
+	  updateSelectInput(session,"wd", choices = names(df)) 
+      updateSelectInput(session,"ws", choices = names(df)) 	  
+    }
+  }) 
+	   
 
-  # Application title
-  headerPanel("Eliav's Wind Rose"),
+  # Generate a plot of the data. Also uses the inputs to build the 
+  # plot label. Note that the dependencies on both the inputs and
+  # the 'data' reactive expression are both tracked, and all expressions 
+  # are called in the sequence implied by the dependency graph
+  output$plot <- renderPlot({
+  if(is.null(input$bugs)){return()}
+  if(input$pollutant=="no pollutant"){
+  data<-userdata()
+  data[,input$ws]<-as.numeric(as.character(data[,input$ws]))
+  hist(data[,input$ws], main="wind speed histogram", freq=FALSE)
+  }
+  else
+  {
+ data<-userdata()
+  data[,input$ws]<-as.numeric(as.character(data[,input$ws]))
+  data[,input$pollutant]<-as.numeric(as.character(data[,input$pollutant]))
+    	par(mfrow=c(1,2))
+		hist(data[,input$ws], main="wind speed histogram", freq=FALSE)
+		hist(data[,input$pollutant], main=paste(input$pollutant," histogram"), freq=FALSE)
+		}
+	  })
 
-  # Sidebar with controls to select the random distribution type
-  # and number of observations to generate. Note the use of the br()
-  # element to introduce extra vertical spacing
-  sidebarPanel(
-  
-  #textInput("pollutant","Please enter pollutant","no pollutant"),
-  br(),
-    fileInput("bugs", "Input Data"),
-	br(),
-	#selecting the wind direction
-	selectInput("wd","Please enter Wind direction",names(userdata),selected="wd"),
-	br(),
-	selectInput("ws","Please enter Wind speed",names(userdata),selected="ws"),
-	#selecting a pollutant
-	selectInput("pollutant","Please enter pollutant",choices=c("no pollutant",names(userdata)),selected="no pollutant"),
-	br(),
-	selectInput("directions","Wind Directions",seq(from=4, to=36, by=4),selected=12),
-	radioButtons("sorted", "Sort by:",
-				 c("season" ="season",
-				 "hour"="hour",
-				 "weekday"="weekday",
-				 "day/night"="day_night")
- 
-   ),
-     HTML("<hr>"),
-	 h6("Instructions at", a("Luft Gescheft", 
-            href="http://luftgesheft.wordpress.com/2013/08/13/eliavs-wind-rose-instructions/", target="_blank"))
-			),
-  # Show a tabset that includes a plot, summary, and table view
-  # of the generated distribution
-  mainPanel(
-    tabsetPanel(
-      tabPanel("Plot", plotOutput("plot"), verbatimTextOutput("summary")), 
-      #tabPanel("data Summary", verbatimTextOutput("summary"),downloadButton('downloadPlot1', 'Download table')), 
-      tabPanel("Wind Rose", plotOutput("windrose"),downloadButton('downloadPlot2', 'Download rose')),
-	  tabPanel("Pollution Rose",plotOutput("pollutionrose"), downloadButton('downloadPlot3', 'Download rose'))
-    )
-  )
-))
+  # data summary##
+  output$summary <- renderPrint({
+     Availability<-sum(is.na((as.numeric(as.vector(userdata()[,input$pollutant])))))/length(userdata()[,input$pollutant])*100 
+	 Availability1<-sum(is.na((as.numeric(as.vector(userdata()[,input$ws])))))/length(userdata()[,input$ws])*100 
+	 Availability2<-sum(is.na((as.numeric(as.vector(userdata()[,input$wd])))))/length(userdata()[,input$wd])*100 
+	 print(paste("The availability of the",input$pollutant," is: ",100-Availability,"%"))
+	 print(paste("The availability of the wind speed is:",100-Availability1,"%" ))
+		  })
+  ##################wind rose################
+  #build the wind rose
+plotwindrose<-reactive(function() {
+        data<-userdata()
+		angle<-360/as.numeric(input$directions)
+  data[,input$ws]<-as.numeric(as.character(data[,input$ws]))
+  data[,input$wd]<-as.numeric(as.character(data[,input$wd]))
+  p<-windRose(data,type=input$sorted,ws=input$ws, wd=input$wd,angle=angle)
+  })
+  #show the wind rose
+  output$windrose <- renderPlot({
+ print(plotwindrose())
+   })
+   #download the wind rose
+  output$downloadPlot2 <- downloadHandler(
+    filename = function() { paste(input$bugs,"wind rose", ".png", sep="") },
+    content = function(file) {
+      png(file)
+      print(plotwindrose())
+      dev.off()
+    })
+  ##################pollution rose################
+  #build the pollution rose
+  plotpollutionrose<-reactive(function() {
+        data<-userdata()
+		data[,input$pollutant]<-as.numeric(as.character(data[,input$pollutant]))
+   p<-polarPlot(data,pollutant=input$pollutant,type=input$sorted)
+		})
+		# show the pollution rose
+  output$pollutionrose <- renderPlot({
+  print(plotpollutionrose())
+
+})
+ #download the pollution rose
+  output$downloadPlot3 <- downloadHandler(
+    filename = function() { paste(input$bugs," pollution rose", ".png", sep="") },
+    content = function(file) {
+      png(file)
+      print(plotpollutionrose())
+      dev.off()
+    })
+})

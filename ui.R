@@ -24,7 +24,8 @@ shinyUI(pageWithSidebar(
 	br(),
 	selectInput("directions","Wind Directions",seq(from=4, to=36, by=4),selected=12),
 	radioButtons("sorted", "Sort by:",
-				 c("season" ="season",
+				 c("no sorting"="no sorting",
+				 "season" ="season",
 				 "hour"="hour",
 				 "weekday"="weekday",
 				 "day/night"="day_night")
@@ -41,7 +42,7 @@ shinyUI(pageWithSidebar(
       tabPanel("Plot", plotOutput("plot"), verbatimTextOutput("summary")), 
       #tabPanel("data Summary", verbatimTextOutput("summary"),downloadButton('downloadPlot1', 'Download table')), 
       tabPanel("Wind Rose", plotOutput("windrose"),downloadButton('downloadPlot2', 'Download rose')),
-	  tabPanel("Pollution Rose",plotOutput("pollutionrose"), downloadButton('downloadPlot3', 'Download rose'))
+	  tabPanel("Pollution Rose",plotOutput("pollutionrose"),selectInput("k", "K value" ,c(0,0.5,1,seq(from=10, to=100, by=10)),selected=100), downloadButton('downloadPlot3', 'Download rose'))
     )
   )
 ))

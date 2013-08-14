@@ -46,7 +46,7 @@ shinyServer(function(input, output,session) {
 
   # data summary##
   output$summary <- renderPrint({
-     Availability<-sum(is.na((as.numeric(as.vector(userdata()[,input$pollutant])))))/length(userdata()[,input$pollutant])*100 
+     Availability<-sum(is.na((as.numeric(as.character(userdata()[,input$pollutant])))))/length(userdata()[,input$pollutant])*100 
 	 Availability1<-sum(is.na((as.numeric(as.vector(userdata()[,input$ws])))))/length(userdata()[,input$ws])*100 
 	 Availability2<-sum(is.na((as.numeric(as.vector(userdata()[,input$wd])))))/length(userdata()[,input$wd])*100 
 	 print(paste("The availability of the",input$pollutant," is: ",100-Availability,"%"))
@@ -59,7 +59,12 @@ plotwindrose<-reactive(function() {
 		angle<-360/as.numeric(input$directions)
   data[,input$ws]<-as.numeric(as.character(data[,input$ws]))
   data[,input$wd]<-as.numeric(as.character(data[,input$wd]))
+  if(input$sorted=="no sorting"){
+  p<-windRose(data,ws=input$ws, wd=input$wd,angle=angle)
+  }
+  else{
   p<-windRose(data,type=input$sorted,ws=input$ws, wd=input$wd,angle=angle)
+  }
   })
   #show the wind rose
   output$windrose <- renderPlot({
@@ -80,7 +85,12 @@ plotwindrose<-reactive(function() {
 	data[,input$pollutant]<-as.numeric(as.character(data[,input$pollutant]))
 	data[,input$ws]<-as.numeric(as.character(data[,input$ws]))
 	data[,input$wd]<-as.numeric(as.character(data[,input$wd]))
-   p<-polarPlot(data,wd=input$wd,x=input$ws,pollutant=input$pollutant,type=input$sorted)
+	if(input$sorted=="no sorting"){
+	p<-polarPlot(data,wd=input$wd,x=input$ws,pollutant=input$pollutant,k=input$k)
+	}
+	else{
+   p<-polarPlot(data,wd=input$wd,x=input$ws,pollutant=input$pollutant,type=input$sorted, k=input$k)
+   }
 		})
 		# show the pollution rose
   output$pollutionrose <- renderPlot({

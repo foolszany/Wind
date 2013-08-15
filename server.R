@@ -85,11 +85,12 @@ plotwindrose<-reactive(function() {
 	data[,input$pollutant]<-as.numeric(as.character(data[,input$pollutant]))
 	data[,input$ws]<-as.numeric(as.character(data[,input$ws]))
 	data[,input$wd]<-as.numeric(as.character(data[,input$wd]))
+	k<-as.numeric(input$k)
 	if(input$sorted=="no sorting"){
-	p<-polarPlot(data,wd=input$wd,x=input$ws,pollutant=input$pollutant,k=input$k)
+	a<-polarPlot(data,wd=input$wd,x=input$ws,pollutant=input$pollutant,k=k )
 	}
 	else{
-   p<-polarPlot(data,wd=input$wd,x=input$ws,pollutant=input$pollutant,type=input$sorted, k=input$k)
+   a<-polarPlot(data,wd=input$wd,x=input$ws,pollutant=input$pollutant,type=input$sorted, k=k)
    }
 		})
 		# show the pollution rose
